@@ -12,13 +12,9 @@ namespace ProyectoConsolaV2.Controlador
         public Menu()
         {
         }
-        //Recuperamos la lista de objetos de json apenas empieza la app
-
-        
 
         public void iniciarApp()
         {
-            bool terminar = false;
             string eleccion;
 
             do
@@ -28,11 +24,9 @@ namespace ProyectoConsolaV2.Controlador
                         new SelectionPrompt<String>()
                         .Title("[Green]Elija una opción[/]")
                         .AddChoices(
-                            "Ver Objetos de la tienda",
-                            "Agregar Objeto",
-                            "Sacar Objeto",
-                            "Editar Objeto",
-                            "Guardar Cambios",
+                            "Listar",
+                            "Crear Prestación",
+                            "",
                             "Finalizar"
                         )
                     );
@@ -40,29 +34,63 @@ namespace ProyectoConsolaV2.Controlador
                 switch (eleccion)
                 {
 
-                    case "Ver Objetos de la ":
+                    case "Listar":
+                        listado();
                         break;
-                    case "Agregar Objeto":
+                    case "":
                         break;
-                    case "Sacar Objeto":
+                    case "2":
                         ; break;
-                    case "Editar Objeto":
+                    case "3":
                         break;
-                    case "Guardar Cambios":
+                    case "4":
                         
                         break;
-                    case "Finalizar":
-                        terminar = true;
-                        break;
-
                     default:
                         AnsiConsole.Clear();
                         AnsiConsole.MarkupLine("[Red] Presione un valor correcto [/]");
                         break;
                 }
-            } while (!terminar);
+            } while (eleccion != "Finalizar");
 
 
+        }
+
+        public void listado()
+        {
+            string eleccion;
+
+            do
+            {
+                eleccion = AnsiConsole.Prompt(
+                            new SelectionPrompt<String>()
+                            .Title("[Green]Elija una opción[/]")
+                            .AddChoices(
+                                "Listar Prestaciones",
+                                "Listar Pacientes",
+                                "Listar Examenes",
+                                "Listar Itemprestación",
+                                "Finalizar"
+                            )
+                        );
+
+                switch (eleccion)
+                {
+                    case "Listar Prestaciones":
+                        BdController controlador = new BdController();
+                        foreach (var e in controlador.recuperarListadoPrestacion())
+                            AnsiConsole.WriteLine(e.ToString());
+                        break;
+
+                    case "Listar Pacientes": 
+                        break;
+                    case "Listar Examenes":
+                        break;
+                    case "Listar Itemprestación":
+                        break;
+                }
+            } while (eleccion != "Finalizar");
+        
         }
 
         public void modificarObjeto()
