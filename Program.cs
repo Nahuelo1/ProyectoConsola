@@ -1,5 +1,4 @@
-﻿
-using ProyectoConsolaV2.Controlador;
+﻿using ProyectoConsolaV2.Views;
 using Spectre.Console;
 
 namespace ProyectoEximoConsola

@@ -23,24 +23,7 @@ namespace ProyectoConsolaV2.Controlador
             IQueryable<PrestacionDto> queryPrestacion;
             using (ProjectConsoleContext context = new ProjectConsoleContext(optionsBuilder.Options))
             {
-                queryPrestacion = from pre in context.Prestacions
-                                  join e in context.Empresas on pre.IdEmpresa equals e.Id into empresa
-                                  from e in empresa.DefaultIfEmpty()
-                                  join pa in context.Pacientes on pre.IdPaciente equals pa.Id into paciente
-                                  from pa in paciente.DefaultIfEmpty()
-                                  join items in context.ExamenPrestacions on pre.Id equals items.IdPrestacion into examenes
-                                  from its in examenes.DefaultIfEmpty()
-                                  join ex in context.Examen on its.IdExamen equals ex.Id into exa
-                                  from examen in exa.DefaultIfEmpty()
-                                  select new PrestacionDto
-                                  {
-                                      Prestacion = pre,
-                                      NombreEmpresa = e.RazonSocial,
-                                      NombrePaciente = pa.Nombre + " " + pa.Apellido,
-                                  };
-
-                //Listo las prestaciones, filtrando las duplicadas 
-                listadoPrestacion = queryPrestacion.Select(p => p.Prestacion).Distinct().ToList();
+                listadoPrestacion = context.Prestacions.Where(p => p.Baja == 0).OrderBy(p => p.NroPrestacion).ToList();
 
             }
 
@@ -60,6 +43,7 @@ namespace ProyectoConsolaV2.Controlador
                                   from e in empresa.DefaultIfEmpty()
                                   join pa in context.Pacientes on pre.IdPaciente equals pa.Id into paciente
                                   from pa in paciente.DefaultIfEmpty()
+                                  where pre.Baja == 0
                                   select new PrestacionDto
                                   {
                                       Prestacion = pre,
@@ -104,7 +88,7 @@ namespace ProyectoConsolaV2.Controlador
             List<Examan> listaExamenes = new List<Examan>();    
             using (ProjectConsoleContext context = new ProjectConsoleContext(optionsBuilder.Options))
             {
-                listaExamenes = context.Examen.OrderBy(e => e.Nombre).ToList();
+                listaExamenes = context.Examen.OrderBy(e => e.Id).ToList();
             }
             return listaExamenes;
         }
@@ -118,6 +102,74 @@ namespace ProyectoConsolaV2.Controlador
             }
             return listadoEmpresa;
 
+        }
+
+        internal bool agregarPrestación(Prestacion p)
+        {
+            using (ProjectConsoleContext context = new ProjectConsoleContext(optionsBuilder.Options))
+            {
+                try
+                {
+                    context.Prestacions.Add(p);
+                    context.SaveChanges();
+                    return true;
+                }
+                catch (Exception ex) {
+                    AnsiConsole.MarkupLine("[Red]Error al dar de alta la prestación[/]");
+                    return false;
+                }
+            }
+        }
+
+        internal List<ExamenPrestacion> listadoExPrest()
+        {
+            using (ProjectConsoleContext context = new ProjectConsoleContext(optionsBuilder.Options))
+            {
+                return context.ExamenPrestacions.ToList();
+            }
+        }
+
+        internal bool agregarExamenPrestacion(ExamenPrestacion e)
+        {
+            using (ProjectConsoleContext context = new ProjectConsoleContext(optionsBuilder.Options))
+            {
+                try
+                {
+                    context.ExamenPrestacions.Add(e);
+                    context.SaveChanges();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    AnsiConsole.MarkupLine("[Red]Error al dar de alta la prestación[/]");
+                    return false;
+                }
+            }
+
+        }
+
+        public async void bajaPrestacion(int idP)
+        {
+            using (ProjectConsoleContext context = new ProjectConsoleContext(optionsBuilder.Options))
+            {
+                Prestacion prest = await context.Prestacions.FirstOrDefaultAsync(p => p.NroPrestacion == idP);
+                
+                if(prest != null) {
+                    prest.Baja = 1;
+                    context.SaveChanges();
+                    
+                }
+            }
+
+
+        }
+
+        internal int totalPrestaciones()
+        {
+            using (ProjectConsoleContext context = new ProjectConsoleContext(optionsBuilder.Options))
+            {
+               return context.Prestacions.Count();
+            }
         }
     }
 }

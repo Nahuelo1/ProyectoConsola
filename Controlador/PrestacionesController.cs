@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using ProyectoConsolaV2.Models;
 using Spectre.Console;
 using System.Drawing;
@@ -22,6 +23,8 @@ namespace ProyectoConsolaV2.Controlador
         {
             prestacionesDiccionario = new Dictionary<int, Prestacion>();
             db = new DbConexion();
+            listadoPrestaciones = db.obtenerPrestaciones();
+            
         }
 
         public void listarPrestaciones()
@@ -79,16 +82,28 @@ namespace ProyectoConsolaV2.Controlador
                 );
 
                 //Generamos tabla para mostrar Exameens de una prestación
-                var tableExamen = new Table().BorderColor(Spectre.Console.Color.Green);
-                tableExamen.AddColumns("[Yellow] Examen [/]", "[Yellow]Estado[/]" ,"[Yellow] Observación [/]");
-
+               
                 //Recorremos de cada prestación los examenes 
-                foreach (Examan ex in p.ListadoExamen)
-                {   
-                    tableExamen.AddRow(ex.Nombre, ex.Cerrado == true ? "Abierto" : "Cerrado", ex.Observacion);
-                    nodoHijoPrest.AddNode(tableExamen);
+                if (!p.ListadoExamen.IsNullOrEmpty())
+                {
+                    
+                    var tableExamen = new Table().BorderColor(Spectre.Console.Color.Green);
+                    tableExamen.AddColumns("[Red] Examen [/]", "[Yellow]Estado[/]", "[Yellow] Observación [/]");
 
+                    foreach (Examan ex in p.ListadoExamen)
+                    {
+                        tableExamen.AddRow(ex.Nombre, ex.Cerrado == true ? "Abierto" : "Cerrado", ex.Observacion);
+                        nodoHijoPrest.AddNode(tableExamen);
+
+                    }
                 }
+                else
+                {
+                    
+
+                    nodoHijoPrest.AddNode("[Red] No hay examenes agregados a esta prestación [/]");
+                }
+
                     
                
             }
@@ -97,9 +112,43 @@ namespace ProyectoConsolaV2.Controlador
             AnsiConsole.Write(raiz);
         }
 
-        public void crear()
+        public bool crear(string tipo, DateOnly fecha, int empresa, int paciente)
         {
+            Prestacion p = new Prestacion();
+            p.NroPrestacion = db.totalPrestaciones();
+            p.Tipo = tipo;
+            p.FechaCreacion = fecha;
+            p.IdEmpresa = empresa;
+            p.IdPaciente = paciente;
+            p.Cerrado = false;
+            p.EEnviado = false;
+            p.Baja = 0;
 
+            return db.agregarPrestación(p);
+        }
+        
+        public List<string> obtenerPrestacioneString()
+        {
+            List<string> listado = new List<string>();
+
+            foreach(Prestacion p in listadoPrestaciones)
+            {
+                listado.Add($"{p.NroPrestacion}- {p.Tipo}");
+            }
+
+
+            return listado;
+        }
+
+        public Prestacion obtenerPrestacion(int id)
+        {
+           return listadoPrestaciones.FirstOrDefault(p => p.NroPrestacion == id);
+        }
+
+        public bool darBaja(int idPrestacion)
+        {
+            db.bajaPrestacion(idPrestacion); ;
+            return true;
         }
     }
 

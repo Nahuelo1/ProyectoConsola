@@ -1,12 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using ProyectoConsolaV2.Models;
+﻿using ProyectoConsolaV2.Models;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProyectoConsolaV2.Controlador
 {
@@ -18,6 +11,7 @@ namespace ProyectoConsolaV2.Controlador
         public ExamenesController() {
             
             db = new DbConexion();
+            listaExamenes = db.listadoExamenes();
         }
 
 
@@ -35,6 +29,18 @@ namespace ProyectoConsolaV2.Controlador
             }
 
             AnsiConsole.Write(tablaExamenes);
+        }
+
+        internal List<string> listarExamenesString()
+        {
+            List<string> listado = new List<string>();
+
+            foreach (Examan e in listaExamenes)
+            {
+                listado.Add($"{e.Id}- {e.Nombre}");
+            }
+
+            return listado;
         }
     }
 }
